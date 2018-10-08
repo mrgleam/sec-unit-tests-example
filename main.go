@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mrgleam/sectesting/server"
+	"github.com/mrgleam/sec-unit-tests-example/server"
 )
 
 func main() {
