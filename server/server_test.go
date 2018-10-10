@@ -14,7 +14,7 @@ func getRoutes() []*echo.Route {
 	e := NewEchoFramework()
 	return e.Routes()
 }
-func TestWebSecurityHeaderPolicy(t *testing.T) {
+func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 	e := getRoutes()
 	for _, route := range e {
 		fmt.Println("Path:", route.Path)
