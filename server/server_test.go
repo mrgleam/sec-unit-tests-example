@@ -23,9 +23,11 @@ func TestWebSecurityHeaderPolicy(t *testing.T) {
 
 		if route.Method == "GET" {
 			r.GET(route.Path).
-			Run(NewEchoFramework(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-				assert.Equal(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
-			})
+				Run(NewEchoFramework(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+					assert.Equal(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
+					assert.Equal(t, []string{"nosniff"}, r.HeaderMap["X-Content-Type-Options"])
+					assert.Equal(t, []string{"1; mode=block"}, r.HeaderMap["X-Xss-Protection"])
+				})
 		}
 	}
 }

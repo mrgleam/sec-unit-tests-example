@@ -25,7 +25,10 @@ func GetUsers(c echo.Context) error {
 
 func SetMiddleWareSecure() middleware.SecureConfig {
 	return middleware.SecureConfig{
-		XFrameOptions: "DENY",
+		XFrameOptions:         "DENY",
+		XSSProtection:         "1; mode=block",
+		ContentTypeNosniff:    "nosniff",
+		ContentSecurityPolicy: "",
 	}
 }
 
