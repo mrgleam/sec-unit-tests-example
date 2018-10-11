@@ -2,28 +2,11 @@ package server
 
 import (
 	"database/sql"
-	"net/http"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/mrgleam/sec-unit-tests-example/handlers"
 )
-
-type (
-	User struct {
-		Name  string `json:"name" form:"name"`
-		Email string `json:"email" form:"email"`
-	}
-)
-
-func GetUser(c echo.Context) error {
-	email := c.Param("email")
-	return c.JSON(http.StatusOK, email)
-}
-
-func GetUsers(c echo.Context) error {
-	return c.JSON(http.StatusOK, "Get All Users")
-}
 
 func SetSecureMiddleWare() middleware.SecureConfig {
 	return middleware.SecureConfig{
