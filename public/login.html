@@ -1,0 +1,80 @@
+
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+        <title>Login</title>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet"  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+        <!-- JQuery -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+        <!-- Vue.js -->
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
+
+        <script src="https://unpkg.com/vue-cookies@1.5.7/vue-cookies.js"></script>
+    </head>
+    <body>
+        <div>
+            <h4>Login</h4>
+            <form>
+                <label for="email" >E-Mail Address</label>
+                <div>
+                    <input id="email" type="email" v-model="email" required autofocus>
+                </div>
+                <div>
+                    <label for="password" >Password</label>
+                    <div>
+                        <input id="password" type="password" v-model="password" required>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" @click="handleSubmit">
+                        Login
+                    </button>
+                </div>
+            </form>
+            {{ message }}
+        </div>
+
+        <script>
+            new Vue({
+                el: 'body',
+
+                data: {
+                    email : "",
+                    password : "",
+                    message : ""
+                },
+
+                methods : {
+                    handleSubmit(e){
+                        e.preventDefault()
+                        if (this.password.length > 0) {
+                            this.$http.post('/login', {
+                                email: this.email,
+                                password: this.password
+                            })
+                            .then(function (response) {
+                                this.$cookies.set("token",response.data.token)
+                                window.location.href = '/restricted/index.html';
+                            })
+                            .catch(function (error) {
+                                this.message = "Email or Password is incorrect";
+                            });
+                        }
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

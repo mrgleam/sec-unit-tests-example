@@ -24,7 +24,7 @@
     <body>
         <div class="container">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-4" v-if="isLoggedIn">
                     <h2>My Tasks</h2>
                     <ul class="list-group">
                         <li class="list-group-item" v-for="task in tasks">
@@ -56,14 +56,18 @@
 
                 data: {
                     tasks: [],
-                    newTask: {}
+                    newTask: {},
+                    isLoggedIn: false
                 },
 
           // This is run whenever the page is loaded to make sure we have a current task list
                 created: function() {
         // Use the vue-resource $http client to fetch data from the /tasks route
-                    this.$http.get('/tasks').then(function(response) {
+                    this.$http.get('/restricted/tasks').then(function(response) {
                         this.tasks = response.data.items ? response.data.items : []
+                        this.isLoggedIn = true;
+                    }).catch(function (error) {
+                        window.location.href = '/login.html';
                     })
                 },
 
@@ -75,7 +79,7 @@
                         }
 
              // Post the new task to the /tasks route using the $http client
-                        this.$http.put('/tasks', this.newTask).success(function(response) {
+                        this.$http.put('/restricted/tasks', this.newTask).success(function(response) {
                             this.newTask.id = response.created
                             this.tasks.push(this.newTask)
                             console.log("Task created!")
@@ -83,16 +87,18 @@
                             this.newTask = {}
                         }).error(function(error) {
                             console.log(error)
+                            window.location.href = '/login.html';
                         });
                     },
 
                     deleteTask: function(index) {
              // Use the $http client to delete a task by its id
-                        this.$http.delete('/tasks/' + this.tasks[index].id).success(function(response) {
+                        this.$http.delete('/restricted/tasks/' + this.tasks[index].id).success(function(response) {
                             this.tasks.splice(index, 1)
                             console.log("Task deleted!")
                         }).error(function(error) {
                             console.log(error)
+                            window.location.href = '/login.html';
                         })
                     }
                 }

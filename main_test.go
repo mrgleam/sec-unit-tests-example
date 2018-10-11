@@ -1,6 +1,8 @@
 package main_test
 
 import (
+	"github.com/buger/jsonparser"
+	"regexp"
 	"fmt"
 	"testing"
 
@@ -24,32 +26,81 @@ func assertHeaderInclusionPolicy(t *testing.T, r gofight.HTTPResponse) {
 	assert.Equal(t, []string{"1; mode=block"}, r.HeaderMap["X-Xss-Protection"])
 }
 func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
+	var token string
 	e := getRoutes()
 	for _, route := range e {
 		fmt.Println("Path:", route.Path)
 		fmt.Println("Method:", route.Method)
 		r := gofight.New()
 
-		if route.Method == "GET" {
-			r.GET(route.Path).
+		match, _ := regexp.MatchString("/restricted/(.*)", route.Path)
+
+		if match {
+			r.POST("/login").
+				SetJSON(gofight.D{
+					"email": "jon",
+					"password": "shhh!",
+			  	}).
 				Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-					assertHeaderInclusionPolicy(t, r)
+					data := []byte(r.Body.String())
+
+					token, _ = jsonparser.GetString(data, "token")
 				})
-		} else if route.Method == "DELETE" {
-			r.DELETE(route.Path).
-				Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-					assertHeaderInclusionPolicy(t, r)
-				})
-		} else if route.Method == "PUT" {
-			r.PUT(route.Path).
-				Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-					assertHeaderInclusionPolicy(t, r)
-				})
-		} else if route.Method == "POST" {
-			r.PUT(route.Path).
-				Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-					assertHeaderInclusionPolicy(t, r)
-				})
+			if route.Method == "GET" {
+				r.GET(route.Path).
+				    SetCookie(gofight.H{
+					  	"token": token,
+				    }).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "DELETE" {
+				r.DELETE(route.Path).
+					SetCookie(gofight.H{
+						"token": token,
+				  	}).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "PUT" {
+				r.PUT(route.Path).
+					SetCookie(gofight.H{
+						"token": token,
+				  	}).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "POST" {
+				r.POST(route.Path).
+					SetCookie(gofight.H{
+						"token": token,
+				  	}).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			}
+		} else {
+			if route.Method == "GET" {
+				r.GET(route.Path).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "DELETE" {
+				r.DELETE(route.Path).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "PUT" {
+				r.PUT(route.Path).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			} else if route.Method == "POST" {
+				r.PUT(route.Path).
+					Run(server.EchoEngine(db), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+						assertHeaderInclusionPolicy(t, r)
+					})
+			}
 		}
 	}
 }

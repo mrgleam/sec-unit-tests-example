@@ -8,6 +8,7 @@ import (
 	"github.com/mrgleam/sec-unit-tests-example/handlers"
 )
 
+
 func SetSecureMiddleWare() middleware.SecureConfig {
 	return middleware.SecureConfig{
 		XFrameOptions:      "DENY",
@@ -22,10 +23,20 @@ func EchoEngine(db *sql.DB) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.File("/index.html", "public/index.html")
-	e.GET("/tasks", handlers.GetTasks(db))
-	e.PUT("/tasks", handlers.PutTask(db))
-	e.DELETE("/tasks/:id", handlers.DeleteTask(db))
+	e.File("/login.html", "public/login.html")
+	e.POST("/login", handlers.Login)
+
+	r := e.Group("/restricted")
+	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey: []byte("secret"),
+		TokenLookup: "cookie:token",
+	}))
+
+	r.File("/index.html", "public/index.html")
+	r.GET("/tasks", handlers.GetTasks(db))
+	r.PUT("/tasks", handlers.PutTask(db))
+	r.DELETE("/tasks/:id", handlers.DeleteTask(db))
+
 	return e
 }
 
