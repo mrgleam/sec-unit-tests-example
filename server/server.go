@@ -1,10 +1,12 @@
 package server
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/mrgleam/sec-unit-tests-example/handlers"
 )
 
 type (
@@ -23,27 +25,28 @@ func GetUsers(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Get All Users")
 }
 
-func SetMiddleWareSecure() middleware.SecureConfig {
+func SetSecureMiddleWare() middleware.SecureConfig {
 	return middleware.SecureConfig{
-		XFrameOptions:         "DENY",
-		XSSProtection:         "1; mode=block",
-		ContentTypeNosniff:    "nosniff",
-		ContentSecurityPolicy: "",
+		XFrameOptions:      "DENY",
+		XSSProtection:      "1; mode=block",
+		ContentTypeNosniff: "nosniff",
 	}
 }
 
-func NewEchoFramework() *echo.Echo {
+func EchoEngine(db *sql.DB) *echo.Echo {
 	e := echo.New()
-	e.Use(middleware.SecureWithConfig(SetMiddleWareSecure()))
+	e.Use(middleware.SecureWithConfig(SetSecureMiddleWare()))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/users/:email", GetUser)
-	e.GET("/users", GetUsers)
+	e.File("/index.html", "public/index.html")
+	e.GET("/tasks", handlers.GetTasks(db))
+	e.PUT("/tasks", handlers.PutTask(db))
+	e.DELETE("/tasks/:id", handlers.DeleteTask(db))
 	return e
 }
 
-func Server() {
-	e := NewEchoFramework()
+func Server(db *sql.DB) {
+	e := EchoEngine(db)
 	e.Logger.Fatal(e.Start(":1323"))
 }

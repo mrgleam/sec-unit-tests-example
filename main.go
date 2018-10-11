@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/mrgleam/sec-unit-tests-example/database"
 	"github.com/mrgleam/sec-unit-tests-example/server"
 )
 
 func main() {
-	server.Server()
+	db := database.SetupDB()
+	server.Server(db)
 }
