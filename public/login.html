@@ -24,26 +24,33 @@
         <script src="https://unpkg.com/vue-cookies@1.5.7/vue-cookies.js"></script>
     </head>
     <body>
-        <div>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
             <h4>Login</h4>
             <form>
                 <label for="email" >E-Mail Address</label>
+                  <div class="input-group">
+                    <input class="form-control" id="email" type="email" v-model="email" required autofocus>
+                  </div>
                 <div>
-                    <input id="email" type="email" v-model="email" required autofocus>
+                <label for="password" >Password</label>
+                  <div class="input-group">
+                    <input class="form-control" id="password" type="password" v-model="password" required>
+                  </div>
                 </div>
+                <br>
                 <div>
-                    <label for="password" >Password</label>
-                    <div>
-                        <input id="password" type="password" v-model="password" required>
-                    </div>
-                </div>
-                <div>
-                    <button type="submit" @click="handleSubmit">
+                  <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit" @click="handleSubmit">
                         Login
                     </button>
+                  </span>
                 </div>
             </form>
-            {{ message }}
+            <font color="red">{{ message }}</font>
+            </div>
+          </div>
         </div>
 
         <script>
