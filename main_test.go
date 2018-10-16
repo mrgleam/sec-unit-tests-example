@@ -41,8 +41,8 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 		if match {
 			r.POST("/login").
 				SetJSON(gofight.D{
-					"email": "jon",
-					"password": "shhh!",
+					"email": "test01@test.com",
+					"password": "test01",
 			  	}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					data := []byte(r.Body.String())

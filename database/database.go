@@ -33,8 +33,21 @@ func migrate(db *sql.DB) {
 	sql := `
     CREATE TABLE IF NOT EXISTS tasks(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR NOT NULL
-    );
+		name VARCHAR NOT NULL,
+		user_id INTEGER NOT NULL
+	);
+	
+	CREATE TABLE IF NOT EXISTS users(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		email VARCHAR NOT NULL,
+		password VARCHAR NOT NULL
+	);
+	
+	INSERT INTO users (email, password)
+	VALUES ('test01@test.com', 'test01');
+
+	INSERT INTO users (email, password)
+	VALUES ('test02@test.com', 'test02');
     `
 
 	_, err := db.Exec(sql)

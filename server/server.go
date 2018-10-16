@@ -32,9 +32,9 @@ func EchoEngine(db *sql.DB) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.POST(decorator("/logintest", handlers.Login, "sectesting.handlers.LoginRequestor"))
+	e.POST(decorator("/logintest", handlers.Login(db), "sectesting.handlers.LoginRequestor"))
 	e.File("/login.html", "public/login.html")
-	e.POST("/login", handlers.Login)
+	e.POST("/login", handlers.Login(db))
 
 	r := e.Group("/restricted")
 	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{

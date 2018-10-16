@@ -8,8 +8,9 @@ import (
 
 // Task is a struct containing Task data
 type Task struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	UserID int    `json:"user_id"`
 }
 
 // TaskCollection is collection of Tasks
@@ -30,7 +31,7 @@ func GetTasks(db *sql.DB) TaskCollection {
 	result := TaskCollection{}
 	for rows.Next() {
 		task := Task{}
-		err2 := rows.Scan(&task.ID, &task.Name)
+		err2 := rows.Scan(&task.ID, &task.Name, &task.UserID)
 		// Exit if we get an error
 		if err2 != nil {
 			panic(err2)
@@ -40,8 +41,8 @@ func GetTasks(db *sql.DB) TaskCollection {
 	return result
 }
 
-func PutTask(db *sql.DB, name string) (int64, error) {
-	sql := "INSERT INTO tasks(name) VALUES(?)"
+func PutTask(db *sql.DB, name string, user_id int) (int64, error) {
+	sql := "INSERT INTO tasks(name, user_id) VALUES(?,?)"
 
 	// Create a prepared SQL statement
 	stmt, err := db.Prepare(sql)
@@ -53,7 +54,7 @@ func PutTask(db *sql.DB, name string) (int64, error) {
 	defer stmt.Close()
 
 	// Replace the '?' in our prepared statement with 'name'
-	result, err2 := stmt.Exec(name)
+	result, err2 := stmt.Exec(name, user_id)
 	// Exit if we get an error
 	if err2 != nil {
 		panic(err2)
