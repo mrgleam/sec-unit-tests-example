@@ -1,17 +1,18 @@
 package main_test
 
 import (
-	"reflect"
-	"path/filepath"
-	"runtime"
-	"github.com/buger/jsonparser"
-	"regexp"
 	"fmt"
+	"path/filepath"
+	"reflect"
+	"runtime"
 	"testing"
+
+	"github.com/buger/jsonparser"
 
 	"github.com/labstack/echo"
 	"github.com/mrgleam/sec-unit-tests-example/database"
 	"github.com/mrgleam/sec-unit-tests-example/server"
+	sec "github.com/mrgleam/sec-unit-tests-example/tests"
 
 	"github.com/appleboy/gofight"
 )
@@ -36,14 +37,14 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 		fmt.Println("Method:", route.Method)
 		r := gofight.New()
 
-		match, _ := regexp.MatchString("/restricted/(.*)", route.Path)
+		//match, _ := regexp.MatchString("/restricted/(.*)", route.Path)
 
-		if match {
+		if sec.RoutesChecker[route.Path].RequireAuthen {
 			r.POST("/login").
 				SetJSON(gofight.D{
-					"email": "test01@test.com",
+					"email":    "test01@test.com",
 					"password": "test01",
-			  	}).
+				}).
 				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 					data := []byte(r.Body.String())
 
@@ -51,9 +52,9 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 				})
 			if route.Method == "GET" {
 				r.GET(route.Path).
-				    SetCookie(gofight.H{
-					  	"token": token,
-				    }).
+					SetCookie(gofight.H{
+						"token": token,
+					}).
 					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 						assertHeaderInclusionPolicy(t, r)
 					})
@@ -61,7 +62,7 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 				r.DELETE(route.Path).
 					SetCookie(gofight.H{
 						"token": token,
-				  	}).
+					}).
 					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 						assertHeaderInclusionPolicy(t, r)
 					})
@@ -69,7 +70,7 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 				r.PUT(route.Path).
 					SetCookie(gofight.H{
 						"token": token,
-				  	}).
+					}).
 					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 						assertHeaderInclusionPolicy(t, r)
 					})
@@ -77,7 +78,7 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 				r.POST(route.Path).
 					SetCookie(gofight.H{
 						"token": token,
-				  	}).
+					}).
 					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 						assertHeaderInclusionPolicy(t, r)
 					})
