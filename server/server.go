@@ -44,7 +44,7 @@ func EchoEngine(db *sql.DB) *echo.Echo {
 	e.File("/index.html", "public/index.html")
 
 	e.POST("/api/login", handlers.Login(db))
-	e.GET("/api/tasks", handlers.GetTasks(db), SetJWTMiddleWare())
+	e.GET("/api/tasks", handlers.GetTasks(db))
 	e.PUT("/api/tasks", handlers.PutTask(db), SetJWTMiddleWare())
 	e.DELETE("/api/tasks/:id", handlers.DeleteTask(db), SetJWTMiddleWare())
 

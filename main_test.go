@@ -19,6 +19,10 @@ import (
 
 var db = database.SetupDB()
 
+func assertAuthentication(t *testing.T, r gofight.HTTPResponse) {
+	equals(t, 400, r.Code)
+}
+
 func assertHeaderInclusionPolicy(t *testing.T, r gofight.HTTPResponse) {
 	equals(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
 	equals(t, []string{"nosniff"}, r.HeaderMap["X-Content-Type-Options"])
@@ -88,6 +92,40 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 						assertHeaderInclusionPolicy(t, r)
 					})
+			}
+		}
+	}
+}
+
+func TestAuthentication(t *testing.T) {
+	e := server.EchoEngine(db)
+	r := gofight.New()
+
+	for k, c := range sec.RoutesChecker {
+		if c.RequireAuthen {
+			for _, m := range c.Method {
+				fmt.Println("Method", m)
+				if m == "GET" {
+					r.GET(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAuthentication(t, r)
+						})
+				} else if m == "PUT" {
+					r.PUT(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAuthentication(t, r)
+						})
+				} else if m == "POST" {
+					r.POST(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAuthentication(t, r)
+						})
+				} else if m == "DELETE" {
+					r.DELETE(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAuthentication(t, r)
+						})
+				}
 			}
 		}
 	}
