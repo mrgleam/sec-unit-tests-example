@@ -1,8 +1,8 @@
 package server
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -15,7 +15,7 @@ func repository(s string) {
 
 func decorator(s string, e echo.HandlerFunc, t string) (string, echo.HandlerFunc) {
 	repository(t)
-	return s , e
+	return s, e
 }
 
 func SetSecureMiddleWare() middleware.SecureConfig {
@@ -26,26 +26,27 @@ func SetSecureMiddleWare() middleware.SecureConfig {
 	}
 }
 
+func SetJWTMiddleWare() echo.MiddlewareFunc {
+	return middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:  []byte("secret"),
+		TokenLookup: "cookie:token",
+	})
+}
+
 func EchoEngine(db *sql.DB) *echo.Echo {
 	e := echo.New()
-	e.Use(middleware.SecureWithConfig(SetSecureMiddleWare()))
+	// e.Use(middleware.SecureWithConfig(SetSecureMiddleWare()))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	e.POST(decorator("/logintest", handlers.Login(db), "sectesting.handlers.LoginRequestor"))
 	e.File("/login.html", "public/login.html")
-	e.POST("/login", handlers.Login(db))
+	e.File("/index.html", "public/index.html")
 
-	r := e.Group("/restricted")
-	r.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte("secret"),
-		TokenLookup: "cookie:token",
-	}))
-
-	r.File("/index.html", "public/index.html")
-	r.GET("/tasks", handlers.GetTasks(db))
-	r.PUT("/tasks", handlers.PutTask(db))
-	r.DELETE("/tasks/:id", handlers.DeleteTask(db))
+	e.POST("/api/login", handlers.Login(db))
+	e.GET("/api/tasks", handlers.GetTasks(db), SetJWTMiddleWare())
+	e.PUT("/api/tasks", handlers.PutTask(db), SetJWTMiddleWare())
+	e.DELETE("/api/tasks/:id", handlers.DeleteTask(db), SetJWTMiddleWare())
 
 	return e
 }

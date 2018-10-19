@@ -67,13 +67,13 @@
                     handleSubmit(e){
                         e.preventDefault()
                         if (this.password.length > 0) {
-                            this.$http.post('/login', {
+                            this.$http.post('/api/login', {
                                 email: this.email,
                                 password: this.password
                             })
                             .then(function (response) {
                                 this.$cookies.set("token",response.data.token)
-                                window.location.href = '/restricted/index.html';
+                                window.location.href = '/index.html';
                             })
                             .catch(function (error) {
                                 this.message = "Email or Password is incorrect";

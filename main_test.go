@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/buger/jsonparser"
-
 	"github.com/labstack/echo"
+
 	"github.com/mrgleam/sec-unit-tests-example/database"
 	"github.com/mrgleam/sec-unit-tests-example/server"
 	sec "github.com/mrgleam/sec-unit-tests-example/tests"
@@ -19,37 +19,21 @@ import (
 
 var db = database.SetupDB()
 
-func getRoutes() []*echo.Route {
-	e := server.EchoEngine(db)
-	return e.Routes()
-}
 func assertHeaderInclusionPolicy(t *testing.T, r gofight.HTTPResponse) {
 	equals(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
-	// assert.Equal(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
-	// assert.Equal(t, []string{"nosniff"}, r.HeaderMap["X-Content-Type-Options"])
-	// assert.Equal(t, []string{"1; mode=block"}, r.HeaderMap["X-Xss-Protection"])
+	equals(t, []string{"nosniff"}, r.HeaderMap["X-Content-Type-Options"])
+	equals(t, []string{"1; mode=block"}, r.HeaderMap["X-Xss-Protection"])
 }
 func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
-	var token string
 	e := server.EchoEngine(db)
+	r := gofight.New()
+	token := LoginWitTestData(r, e)
+
 	for _, route := range e.Routes() {
 		fmt.Println("Path:", route.Path)
 		fmt.Println("Method:", route.Method)
-		r := gofight.New()
-
-		//match, _ := regexp.MatchString("/restricted/(.*)", route.Path)
 
 		if sec.RoutesChecker[route.Path].RequireAuthen {
-			r.POST("/login").
-				SetJSON(gofight.D{
-					"email":    "test01@test.com",
-					"password": "test01",
-				}).
-				Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-					data := []byte(r.Body.String())
-
-					token, _ = jsonparser.GetString(data, "token")
-				})
 			if route.Method == "GET" {
 				r.GET(route.Path).
 					SetCookie(gofight.H{
@@ -107,6 +91,21 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 			}
 		}
 	}
+}
+
+func LoginWitTestData(r *gofight.RequestConfig, e *echo.Echo) string {
+	var token string
+	r.POST("/api/login").
+		SetJSON(gofight.D{
+			"email":    "test01@test.com",
+			"password": "test01",
+		}).
+		Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			data := []byte(r.Body.String())
+
+			token, _ = jsonparser.GetString(data, "token")
+		})
+	return token
 }
 
 // assert fails the test if the condition is false.
