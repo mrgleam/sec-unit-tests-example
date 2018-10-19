@@ -35,7 +35,7 @@ func SetJWTMiddleWare() echo.MiddlewareFunc {
 
 func EchoEngine(db *sql.DB) *echo.Echo {
 	e := echo.New()
-	// e.Use(middleware.SecureWithConfig(SetSecureMiddleWare()))
+	e.Use(middleware.SecureWithConfig(SetSecureMiddleWare()))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
