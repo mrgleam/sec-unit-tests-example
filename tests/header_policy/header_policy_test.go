@@ -1,10 +1,12 @@
-package main_test
+package header_policy_test
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/buger/jsonparser"
@@ -19,10 +21,6 @@ import (
 
 var db = database.SetupDB()
 
-func assertAuthentication(t *testing.T, r gofight.HTTPResponse) {
-	equals(t, 400, r.Code)
-}
-
 func assertHeaderInclusionPolicy(t *testing.T, r gofight.HTTPResponse) {
 	equals(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
 	equals(t, []string{"nosniff"}, r.HeaderMap["X-Content-Type-Options"])
@@ -34,8 +32,9 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 	token := LoginWitTestData(r, e)
 
 	for _, route := range e.Routes() {
-		fmt.Println("Path:", route.Path)
-		fmt.Println("Method:", route.Method)
+		if strings.Contains(route.Handler, "echo.(*Echo).File.func1") {
+			e.File(route.Path, "../../public/"+route.Path)
+		}
 
 		if sec.RoutesChecker[route.Path].RequireAuthen {
 			if route.Method == "GET" {
@@ -95,40 +94,7 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestAuthentication(t *testing.T) {
-	e := server.EchoEngine(db)
-	r := gofight.New()
-
-	for k, c := range sec.RoutesChecker {
-		if c.RequireAuthen {
-			for _, m := range c.Method {
-				fmt.Println("Method", m)
-				if m == "GET" {
-					r.GET(k).
-						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-							assertAuthentication(t, r)
-						})
-				} else if m == "PUT" {
-					r.PUT(k).
-						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-							assertAuthentication(t, r)
-						})
-				} else if m == "POST" {
-					r.POST(k).
-						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-							assertAuthentication(t, r)
-						})
-				} else if m == "DELETE" {
-					r.DELETE(k).
-						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-							assertAuthentication(t, r)
-						})
-				}
-			}
-		}
-	}
+	deleteDatabase()
 }
 
 func LoginWitTestData(r *gofight.RequestConfig, e *echo.Echo) string {
@@ -170,5 +136,14 @@ func equals(tb testing.TB, exp, act interface{}) {
 		_, file, line, _ := runtime.Caller(1)
 		fmt.Printf("\033[31m%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\033[39m\n\n", filepath.Base(file), line, exp, act)
 		tb.FailNow()
+	}
+}
+
+func deleteDatabase() {
+	path := "storage.db"
+	err := os.Remove(path)
+
+	if err != nil {
+		fmt.Println(err)
 	}
 }
