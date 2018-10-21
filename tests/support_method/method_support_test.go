@@ -32,7 +32,7 @@ func contains(slice []string, item string) bool {
 	return ok
 }
 
-func TestAllowMethod(t *testing.T) {
+func TestMethodNotAllow(t *testing.T) {
 	e := server.EchoEngine(db)
 	r := gofight.New()
 
