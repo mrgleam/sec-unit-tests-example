@@ -18,9 +18,9 @@ type TaskCollection struct {
 	Tasks []Task `json:"items"`
 }
 
-func GetTasks(db *sql.DB) TaskCollection {
-	sql := "SELECT * FROM tasks"
-	rows, err := db.Query(sql)
+func GetTasks(db *sql.DB, UserID int) TaskCollection {
+	sql := "SELECT * FROM tasks WHERE user_id=$1"
+	rows, err := db.Query(sql, UserID)
 	// Exit if the SQL doesn't work for some reason
 	if err != nil {
 		panic(err)

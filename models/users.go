@@ -20,7 +20,7 @@ func GetUser(db *sql.DB, email string) User {
 	// Exit if the SQL doesn't work for some reason
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println("Zero rows found")
+			log.Println("GetUser: Zero rows found")
 		} else {
 			panic(err)
 		}
@@ -36,7 +36,7 @@ func GetUserID(db *sql.DB, email string) int {
 	// Exit if the SQL doesn't work for some reason
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Println("Zero rows found")
+			log.Println("GetUserID: Zero rows found")
 		} else {
 			panic(err)
 		}

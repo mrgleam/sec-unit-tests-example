@@ -17,8 +17,22 @@ type H map[string]interface{}
 // GetTasks endpoint
 func GetTasks(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		tokenInCookie, err := c.Cookie("token")
+		if err != nil {
+			return err
+		}
+		userInToken := models.Token{}
+		// Let's parse this by the secrete, which only server knows.
+		_, err = jwt.ParseWithClaims(tokenInCookie.Value, &userInToken, func(token *jwt.Token) (interface{}, error) {
+			return []byte("secret"), nil
+		})
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		userID := models.GetUserID(db, userInToken.Email)
 		// Fetch tasks using our new model
-		return c.JSON(http.StatusOK, models.GetTasks(db))
+		return c.JSON(http.StatusOK, models.GetTasks(db,userID))
 	}
 }
 
@@ -43,7 +57,6 @@ func PutTask(db *sql.DB) echo.HandlerFunc {
 			return err
 		}
 		userID := models.GetUserID(db, userInToken.Email)
-		log.Println("userID", userID)
 		// Add a task using our new model
 		id, err := models.PutTask(db, task.Name, userID)
 		// Return a JSON response if successful
