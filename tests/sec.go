@@ -9,7 +9,7 @@ type Checker struct {
 }
 
 var RoutesChecker = map[string]Checker{
-	"/login":         Checker{[]string{"POST"}, false, models.User{}},
+	"/api/login":     Checker{[]string{"POST"}, false, models.User{}},
 	"/logintest":     Checker{[]string{"POST"}, false, models.User{}},
 	"/login.html":    Checker{[]string{"GET"}, false, nil},
 	"/api/tasks":     Checker{[]string{"GET", "PUT"}, true, models.Task{}},

@@ -1,4 +1,4 @@
-package support_method_test
+package method_support_test
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	sec "github.com/mrgleam/sec-unit-tests-example/tests"
 )
 
-var AllMethod = []string{"GET", "PUT", "POST", "DELETE", "TRACE", "HEAD"}
+var AllMethod = []string{"GET", "PUT", "POST", "DELETE", "PATCH", "HEAD"}
 
 var db = database.SetupDB()
 
@@ -22,32 +22,54 @@ func assertAllowMethod(t *testing.T, r gofight.HTTPResponse) {
 	equals(t, 405, r.Code)
 }
 
+func contains(slice []string, item string) bool {
+	set := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[item]
+	return ok
+}
+
 func TestAllowMethod(t *testing.T) {
 	e := server.EchoEngine(db)
 	r := gofight.New()
 
-	for k, c := range sec.RoutesChecker {
-		for _, m := range c.Method {
-			if m == "GET" {
-				r.GET(k).
-					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-						assertAllowMethod(t, r)
-					})
-			} else if m == "PUT" {
-				r.PUT(k).
-					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-						assertAllowMethod(t, r)
-					})
-			} else if m == "POST" {
-				r.POST(k).
-					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-						assertAllowMethod(t, r)
-					})
-			} else if m == "DELETE" {
-				r.DELETE(k).
-					Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-						assertAllowMethod(t, r)
-					})
+	for _, v := range AllMethod {
+		for k, c := range sec.RoutesChecker {
+			if !contains(c.Method, v) {
+				if v == "GET" {
+					r.GET(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				} else if v == "PUT" {
+					r.PUT(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				} else if v == "POST" {
+					r.POST(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				} else if v == "DELETE" {
+					r.DELETE(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				} else if v == "PATCH" {
+					r.PATCH(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				} else if v == "HEAD" {
+					r.HEAD(k).
+						Run(e, func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+							assertAllowMethod(t, r)
+						})
+				}
 			}
 		}
 	}
