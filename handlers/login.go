@@ -16,7 +16,7 @@ func Login(db *sql.DB) echo.HandlerFunc {
 		var user models.User
 		c.Bind(&user)
 		userInDB := models.GetUser(db, user.Email)
-		if user.Email == userInDB.Email && user.Password == userInDB.Password {
+		if user.Email == userInDB.Email && models.ComparePasswords(userInDB.Password, []byte(user.Password)) {
 			// Create token
 			token := jwt.New(jwt.SigningMethodHS256)
 

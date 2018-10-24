@@ -1,7 +1,9 @@
 package header_policy_test
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,6 +15,7 @@ import (
 	"github.com/labstack/echo"
 
 	"github.com/mrgleam/sec-unit-tests-example/database"
+	"github.com/mrgleam/sec-unit-tests-example/models"
 	"github.com/mrgleam/sec-unit-tests-example/server"
 	sec "github.com/mrgleam/sec-unit-tests-example/tests"
 
@@ -20,6 +23,28 @@ import (
 )
 
 var db = database.SetupDB()
+
+func insertTestUser(db *sql.DB, email string, password string) (int64, error) {
+	sql := "INSERT INTO users(email, password) VALUES(?,?)"
+
+	// Create a prepared SQL statement
+	stmt, err := db.Prepare(sql)
+	// Exit if we get an error
+	if err != nil {
+		panic(err)
+	}
+	// Make sure to cleanup after the program exits
+	defer stmt.Close()
+
+	// Replace the '?' in our prepared statement with 'name'
+	result, err2 := stmt.Exec(email, password)
+	// Exit if we get an error
+	if err2 != nil {
+		panic(err2)
+	}
+
+	return result.LastInsertId()
+}
 
 func assertHeaderInclusionPolicy(t *testing.T, r gofight.HTTPResponse) {
 	equals(t, []string{"DENY"}, r.HeaderMap["X-Frame-Options"])
@@ -99,6 +124,11 @@ func TestWebSecureHeaderInclusionPolicy(t *testing.T) {
 
 func LoginWitTestData(r *gofight.RequestConfig, e *echo.Echo) string {
 	var token string
+	hash := models.HashAndSalt([]byte("test01"))
+	_, err := insertTestUser(db, "test01@test.com", hash)
+	if err != nil {
+		log.Println(err)
+	}
 	r.POST("/api/login").
 		SetJSON(gofight.D{
 			"email":    "test01@test.com",

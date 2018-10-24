@@ -40,14 +40,8 @@ func migrate(db *sql.DB) {
 	CREATE TABLE IF NOT EXISTS users(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		email VARCHAR NOT NULL,
-		password VARCHAR NOT NULL
+		password VARCHAR(50) NOT NULL
 	);
-	
-	INSERT INTO users (email, password)
-	VALUES ('test01@test.com', 'test01');
-
-	INSERT INTO users (email, password)
-	VALUES ('test02@test.com', 'test02');
     `
 
 	_, err := db.Exec(sql)
